@@ -11,3 +11,4 @@ A gallery of Shiny apps created or inspiration not on the official Shiny Gallery
 ### IMDB Movie Shiny App
 
 <img width="600" alt="Screen Shot 2021-09-26 at 5 02 54 PM" src="https://user-images.githubusercontent.com/55933131/134827120-c71a5a1e-5366-47c2-901f-5e2fb26448cc.png">
+<img width="600" alt="Screen Shot 2021-09-26 at 5 11 29 PM" src="https://user-images.githubusercontent.com/55933131/134827390-af202db1-31aa-49a6-bf37-d541cd7a8322.png">
