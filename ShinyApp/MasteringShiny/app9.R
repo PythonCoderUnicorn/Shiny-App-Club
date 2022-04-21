@@ -4,6 +4,7 @@
 library(shiny)
 library(bslib)
 library(thematic)
+library(ggplot2)
 
 
 #  IMPERATIVE PROGRAMMING = specific commands and executed immediately
@@ -121,13 +122,6 @@ thematic::thematic_shiny(font="auto")
 
 # --- GLOBAL VARIABLE
 
-# withProgress({
-#   for(i in seq_len(step)){
-#       x = function(x)
-#       incProgress(1/ length(step))
-#   }
-#   
-# })
 
 
 
@@ -137,7 +131,7 @@ thematic::thematic_shiny(font="auto")
 ui <- fluidPage(
   
 
-  h1("Shiny App 8"),
+  h1("Shiny App 9"),
   # ------------------------------
   theme = bslib::bs_theme(
     version = 4,
@@ -149,29 +143,11 @@ ui <- fluidPage(
   # ------------------------------
   
 
-  titlePanel("chapter 8 - user feedback"),
+  titlePanel("chapter 9 - uploads & downloads"),
+
+
   
-  tableOutput('data'),
-  
-  # -- progress bar
-  h3('progress bar'),
-  # numericInput('steps','How many steps ?', 10),
-  # actionButton('go','Action !'),
-  # textOutput('result'),
-  # 
-  
-  # h3('waiteress !'),
-  # waiter::use_waitress(),
-  # numericInput('steps1', 'How many steps?', 5),
-  # actionButton('go','oh Waitress!'),
-  # textOutput('check') # result
-  
-  h3('waiter !'),
-  actionButton('go','call the waiter'),
-  textOutput('bill') # result
-  
-  
-  
+
   
   
   
@@ -180,80 +156,13 @@ ui <- fluidPage(
 
 
 
-
 # ===================================== SERVER
 server <- function(input, output, session) {
 
 
-  notify = function(msg, id=NULL){
-    showNotification(msg, id=id, duration = NULL, closeButton = NULL)
-  }
-  
-  # -- notifications while loading dataset
-  data = reactive({
-    id = notify("Reading data ...")
-    on.exit( removeNotification(id), add = TRUE)
-    Sys.sleep(1)
-    
-    notify("Processing Bajoran data ...", id=id)
-    Sys.sleep(1)
-    
-    notify("Importing Klingon data ...", id=id)
-    Sys.sleep(1)
-    
-    notify("Refactoring Borg data ...", id=id)
-    Sys.sleep(1)
-    
-    # palmerpenguins::penguins
-    mtcars
-  })
-  
-  output$data = renderTable( head( data() ) )
-  
-  
-  
-  # -- progress steps
-  # steppy = eventReactive(input$go, {
-  #   withProgress(message = "Computing random integer", {
-  #     for (i in seq_len(input$steps)) {
-  #       Sys.sleep(0.5)
-  #       incProgress(1 / input$steps)
-  #     }
-  #     runif(1, min = 1, max = 100)
-  #   })
-  # })
-  # 
-  # output$result = renderText( floor( steppy()))
 
-  
-  
-  # -- waitress
-  # dataW = eventReactive(input$go, {
-  #   waitress <- waiter::Waitress$new(max = input$steps1, theme = 'overlay', selector = '#steps1')
-  #   on.exit( waitress$close() )
-  #   
-  #   for (i in seq_len(input$steps1)) {
-  #     Sys.sleep(0.2)
-  #     waitress$inc(1)
-  #   }
-  #   runif(1, min = 1, max = 100)
-  # })
-  # 
-  # output$check = renderText( floor(dataW() ))
-  # 
-  
-  # -- waiter
-  dWaiter = eventReactive(input$go, {
-    waiter = waiter::Waiter$new()
-    waiter$show()
-    on.exit( waiter$hide() )
-    Sys.sleep( sample(5, 1))
-    runif(1, min = 1, max = 100)
-  })
-  output$bill = renderText( floor(dWaiter() ))
-  
-  
-  
+
+
   
 
 }

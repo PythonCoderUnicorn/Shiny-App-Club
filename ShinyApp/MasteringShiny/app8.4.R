@@ -4,6 +4,7 @@
 library(shiny)
 library(bslib)
 library(thematic)
+library(ggplot2)
 
 
 #  IMPERATIVE PROGRAMMING = specific commands and executed immediately
@@ -121,13 +122,6 @@ thematic::thematic_shiny(font="auto")
 
 # --- GLOBAL VARIABLE
 
-# withProgress({
-#   for(i in seq_len(step)){
-#       x = function(x)
-#       incProgress(1/ length(step))
-#   }
-#   
-# })
 
 
 
@@ -150,27 +144,16 @@ ui <- fluidPage(
   
 
   titlePanel("chapter 8 - user feedback"),
-  
-  tableOutput('data'),
-  
-  # -- progress bar
-  h3('progress bar'),
-  # numericInput('steps','How many steps ?', 10),
-  # actionButton('go','Action !'),
-  # textOutput('result'),
-  # 
-  
-  # h3('waiteress !'),
-  # waiter::use_waitress(),
-  # numericInput('steps1', 'How many steps?', 5),
-  # actionButton('go','oh Waitress!'),
-  # textOutput('check') # result
+
+
   
   h3('waiter !'),
   actionButton('go','call the waiter'),
-  textOutput('bill') # result
+  # textOutput('bill'), # result
+  plotOutput('plot'),
   
-  
+  h3(' confirmation '),
+  actionButton('delete', 'Delete all files ?')
   
   
   
@@ -185,74 +168,52 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
 
-  notify = function(msg, id=NULL){
-    showNotification(msg, id=id, duration = NULL, closeButton = NULL)
-  }
+  modal_confirm <- modalDialog(
+    "Are you sure you want to continue?",
+    title = "Deleting files",
+    footer = tagList(
+      actionButton("cancel", "Cancel"),
+      actionButton("ok", "Delete", class = "btn btn-danger")
+    )
+  )
   
-  # -- notifications while loading dataset
-  data = reactive({
-    id = notify("Reading data ...")
-    on.exit( removeNotification(id), add = TRUE)
-    Sys.sleep(1)
-    
-    notify("Processing Bajoran data ...", id=id)
-    Sys.sleep(1)
-    
-    notify("Importing Klingon data ...", id=id)
-    Sys.sleep(1)
-    
-    notify("Refactoring Borg data ...", id=id)
-    Sys.sleep(1)
-    
-    # palmerpenguins::penguins
-    mtcars
-  })
-  
-  output$data = renderTable( head( data() ) )
-  
-  
-  
-  # -- progress steps
-  # steppy = eventReactive(input$go, {
-  #   withProgress(message = "Computing random integer", {
-  #     for (i in seq_len(input$steps)) {
-  #       Sys.sleep(0.5)
-  #       incProgress(1 / input$steps)
-  #     }
-  #     runif(1, min = 1, max = 100)
-  #   })
-  # })
-  # 
-  # output$result = renderText( floor( steppy()))
 
   
-  
-  # -- waitress
-  # dataW = eventReactive(input$go, {
-  #   waitress <- waiter::Waitress$new(max = input$steps1, theme = 'overlay', selector = '#steps1')
-  #   on.exit( waitress$close() )
-  #   
-  #   for (i in seq_len(input$steps1)) {
-  #     Sys.sleep(0.2)
-  #     waitress$inc(1)
-  #   }
-  #   runif(1, min = 1, max = 100)
-  # })
-  # 
-  # output$check = renderText( floor(dataW() ))
-  # 
-  
   # -- waiter
-  dWaiter = eventReactive(input$go, {
-    waiter = waiter::Waiter$new()
-    waiter$show()
-    on.exit( waiter$hide() )
-    Sys.sleep( sample(5, 1))
-    runif(1, min = 1, max = 100)
+  # dWaiter = eventReactive(input$go, {
+  #   waiter = waiter::Waiter$new()
+  #   waiter$show()
+  #   on.exit( waiter$hide() )
+  #   Sys.sleep( sample(5, 1))
+  #   runif(1, min = 1, max = 10)
+  # })
+  # output$bill = renderText( round(dWaiter(),2 ))
+
+
+  data = eventReactive(input$go, {
+    waiter::Waiter$new(id='plot')$show()
+    
+    Sys.sleep(3)
+    data.frame(x= runif(50), y= runif(50))
   })
-  output$bill = renderText( floor(dWaiter() ))
+  output$plot = renderPlot( 
+    ggplot(data(), aes(x=x, y=y, color= x))+
+      geom_point(size= 4)
+    )
   
+  # -- confirmation
+  observeEvent(input$delete, {
+    showModal( modal_confirm )
+  })
   
+  observeEvent(input$ok, {
+    showNotification('Files deleted')
+    removeModal()
+  })
+  
+  observeEvent(input$cancel, {
+    removeModal()
+  })
   
   
 
