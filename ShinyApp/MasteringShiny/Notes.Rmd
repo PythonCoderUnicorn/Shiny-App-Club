@@ -1,0 +1,53 @@
+
+# Mastering Shiny App 
+
+Notes from book.
+
+```{r eval=FALSE, include=FALSE}
+install.packages(c(
+  "gapminder", "ggforce", "gh", "globals", "openintro", "profvis", 
+  "RSQLite", "shiny", "shinycssloaders", "shinyFeedback", 
+  "shinythemes", "testthat", "thematic", "tidyverse", "vroom", 
+  "waiter", "xml2", "zeallot" 
+))
+```
+
+shinyA* autocompletes and generates a template !
+
+
+Slider Calculator
+
+```{}
+ui <- fluidPage(
+
+  # ----- slider calculation 1
+  sliderInput("x", label = "if x is",min=1,max=50,value = 4),
+  "then x times 5 is",
+  textOutput("product"),
+)
+
+server <- function(input, output, session){
+
+  # ----- slider calculation 1
+  output$product = renderText({ 
+      product = input$x * 5
+      product
+    })
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
