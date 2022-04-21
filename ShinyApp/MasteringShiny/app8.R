@@ -126,7 +126,7 @@ thematic::thematic_shiny(font="auto")
 ui <- fluidPage(
   
 
-  h1("Shiny App 7"),
+  h1("Shiny App 8"),
   # ------------------------------
   theme = bslib::bs_theme(
     version = 4,

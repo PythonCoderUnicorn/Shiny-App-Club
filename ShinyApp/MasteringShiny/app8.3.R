@@ -100,7 +100,7 @@ library(thematic)
 
 # feedback(), feedbackWarning(), feedbackDanger(), and feedbackSuccess()
 
-
+# showNotification() : for fixed amt of time/ when a process starts & ends/ progress update
 
 
 
@@ -140,11 +140,7 @@ ui <- fluidPage(
 
   titlePanel("chapter 8 - user feedback"),
   
-  shinyFeedback::useShinyFeedback(),
-  textInput('dataset','Enter a dataset name'),
   tableOutput('data')
-  
-  
   
   
   
@@ -158,30 +154,31 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
 
-  # reactive dataset
+  notify = function(msg, id=NULL){
+    showNotification(msg, id=id, duration = NULL, closeButton = NULL)
+  }
+  
   data = reactive({
-    req(input$dataset)
+    id = notify("Reading data ...")
+    on.exit( removeNotification(id), add = TRUE)
+    Sys.sleep(1)
     
-    # check if dataset exists
-    exists = exists(input$dataset, "package:datasets")
-    shinyFeedback::feedbackDanger('dataset', !exists, 'Unknown dataset')
-    req(exists, cancelOutput = TRUE)
+    notify("Processing Bajoran data ...", id=id)
+    Sys.sleep(1)
     
-    get(input$dataset, "package:datasets")
+    notify("Importing Klingon data ...", id=id)
+    Sys.sleep(1)
+    
+    notify("Refactoring Borg data ...", id=id)
+    Sys.sleep(1)
+    
+    palmerpenguins::penguins
   })
   
-  output$data = renderTable({
-    head( data() )
-  })
+  output$data = renderTable( head( data() ) )
   
-  
-  
-  
-  
-  
-  
-  
-  
+
+
 }
 # ===================================== SERVER
 
