@@ -5,6 +5,7 @@ library(shiny)
 library(bslib)
 library(thematic)
 library(ggplot2)
+library(dplyr)
 
 
 #  IMPERATIVE PROGRAMMING = specific commands and executed immediately
@@ -117,6 +118,24 @@ library(ggplot2)
 # datapath  (where the data has been uploaded)
 
 
+
+
+# dynamic UI --------------------------------------------------------------
+
+#  3 techniques : update, tabsetPanel(), uiOutput()
+
+# update inputs:  updateTextInput()
+
+
+
+
+
+
+
+
+
+
+
 #******************************* ESSENTIAL FOR DARK THEME PLOTS
 thematic::thematic_shiny(font="auto")
 #*******************************
@@ -138,8 +157,6 @@ thematic::thematic_shiny(font="auto")
 # ===================================== UI
 ui <- fluidPage(
   
-
-  h1("Shiny App 9"),
   # ------------------------------
   theme = bslib::bs_theme(
     version = 4,
@@ -151,35 +168,25 @@ ui <- fluidPage(
   # ------------------------------
   
 
-  titlePanel("chapter 9 - uploads & downloads"),
+  h1("Shiny App 10"),
+  titlePanel("chapter 10 - dynamic UI"),
 
 
-  # -- upload multiple files
-  h3('file upload'),
-  fileInput(inputId = 'upload', NULL, buttonLabel =  'Upload a file', multiple = TRUE),
-  tableOutput('files'),
-  
-  
-  #-- upload data
-  h3('dataset upload'),
-  fileInput('data', NULL, accept = c('.csv','.tsv')),
-  numericInput('n','Rows', value = 5, min = 1, step = 1),
-  tableOutput('head'),
-  
-  
-  # -- download
-  h3('download files'),
-  downloadButton('download1'),
-  downloadLink('download2'),
-  
-  
-  # -- download data
-  h3('download data'),
-  selectInput('dataset', 'Select a dataset', ls('package:datasets')),
-  tableOutput('preview'),
-  downloadButton('download', 'Download (.tsv)')
 
+  h3('change min/max value to change slider values'),
+  numericInput("min", "Minimum", 0),
+  numericInput("max", "Maximum", 3),
+  sliderInput("n", "n", min = 0, max = 3, value = 1),
   
+  
+  h3('reset button'),
+  sliderInput("x3", "x3", 0, min = -10, max = 10),
+  actionButton("reset", "Reset"),
+  
+  h3('action button'),
+  numericInput("n1", "Simulations", 10),
+  actionButton("simulate", "Simulate")
+
   
   
 )
@@ -190,58 +197,30 @@ ui <- fluidPage(
 # ===================================== SERVER
 server <- function(input, output, session) {
 
-  # -- file upload
-  output$files = renderTable(input$upload)
-  
-  # -- dataset upload
-  df = reactive({
-    # require input
-    req(input$data)
-    
-    # get the file extension (removes the .)
-    ext = tools::file_ext( input$data$name)
-    switch (ext,
-      csv = vroom::vroom(input$data$datapath, delim= ','),
-      tsv = vroom::vroom(input$data$datapath, delim= '\t'),
-      validate('Invalid file: .csv or .tsv file only')
-    )
+
+  # -- min slider
+  observeEvent(input$min, {
+    updateSliderInput(inputId = "n", min = input$min)
+  })  
+  # -- max slider
+  observeEvent(input$max, {
+    updateSliderInput(inputId = "n", max = input$max)
   })
   
-  output$head = renderTable({
-    head(df(), input$n)
+  
+  # -- reset button
+  observeEvent(input$reset, {
+    updateSliderInput(inputId = "x3", value = 0)
+  })
+  
+  
+  # -- 
+  observeEvent(input$n1, {
+    label <- paste0("Simulate ", input$n1, " times")
+    updateActionButton(inputId = "simulate", label = label)
   })
   
 
-  # -- download button
-  output$download <- downloadHandler(
-    filename = function() {
-      paste0(input$dataset, ".csv")
-    },
-    content = function(file) {
-      write.csv(data(), file)
-    }
-  )
-
-  
-  # -- download data (.tsv)
-  data = reactive({
-    out = get(input$dataset, 'package:datasets')
-    if(!is.data.frame(out)){
-      validate( paste0("'", input$dataset, "' is not a dataframe"))
-    }
-    out 
-  })
-  
-  output$preview = renderTable({
-    head( data() )
-  })
-  
-  output$download = downloadHandler(
-    filename = function(){ paste0(input$dataset, ".tsv")},
-    content = function(file){ vroom::vroom_write(data() , file = file)}
-  )
-  
-  
   
   
   
