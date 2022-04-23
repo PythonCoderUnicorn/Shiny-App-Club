@@ -149,22 +149,6 @@ thematic::thematic_shiny(font="auto")
 
 # --- GLOBAL VARIABLE
 
-sales = read_csv('~/Documents/R_/Git/Shiny-App-Club/Datasets/sales_data_sample.csv', 
-                 col_types = list(), na="")
-
-sales %>% 
-  select(TERRITORY, CUSTOMERNAME, ORDERNUMBER, everything()) %>% 
-  arrange( ORDERNUMBER)
-
-
-# hierarchy in data
-#   territory (customers)
-#     customer  (orders)
-#       order (rows)
-# UI :
-# select territory  see customer
-# select customer   see orders
-# select order      see rows
 
 
 
@@ -188,14 +172,20 @@ ui <- fluidPage(
   
 
   h1("Shiny App 10"),
-  titlePanel("chapter 10 - hierarchical select boxes"),
+  titlePanel("chapter 10 - interrelated inputs"),
 
-  h3('sales data'),
-  selectInput("territory", "Territory", choices = unique(sales$TERRITORY)),
-  selectInput("customername", "Customer", choices = NULL),
-  selectInput("ordernumber", "Order number", choices = NULL),
-  tableOutput("data")
+  
+  h3('number of colors'),
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("n", "Number of colours", value = 5, min = 1),
+      uiOutput("col"),
+    ),
+    mainPanel( plotOutput('plot')),
+  )
 
+  
+  
 
 
   
@@ -210,34 +200,29 @@ ui <- fluidPage(
 # ===================================== SERVER
 server <- function(input, output, session) {
 
+  
+  
+  # ----- no idea what this code is
+  col_names <- reactive(paste0("col", seq_len(input$n)))
+  
+  output$col <- renderUI({
+    map(col_names(), ~ textInput(.x, NULL, value = isolate(input[[.x]])))
+  })
+  
+  output$plot <- renderPlot({
+    cols <- map_chr(col_names(), ~ input[[.x]] %||% "")
+    # convert empty inputs to transparent
+    cols[cols == ""] <- NA
+    
+    barplot(
+      rep(1, length(cols)), 
+      col = cols,
+      space = 0, 
+      axes = FALSE
+    )
+  }, res = 96)
+  
 
-  territory <- reactive({
-    filter(sales, TERRITORY == input$territory)
-  })
-  observeEvent(territory(), {
-    choices <- unique(territory()$CUSTOMERNAME)
-    updateSelectInput(inputId = "customername", choices = choices) 
-  })
-  
-  customer <- reactive({
-    req(input$customername)
-    filter(territory(), CUSTOMERNAME == input$customername)
-  })
-  observeEvent(customer(), {
-    choices <- unique(customer()$ORDERNUMBER)
-    updateSelectInput(inputId = "ordernumber", choices = choices)
-  })
-  
-  output$data <- renderTable({
-    req(input$ordernumber)
-    customer() %>% 
-      filter(ORDERNUMBER == input$ordernumber) %>% 
-      select(QUANTITYORDERED, PRICEEACH, PRODUCTCODE)
-  })
-
-
-  
-  
   
 
 }

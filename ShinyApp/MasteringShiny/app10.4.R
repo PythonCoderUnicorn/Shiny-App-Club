@@ -149,25 +149,31 @@ thematic::thematic_shiny(font="auto")
 
 # --- GLOBAL VARIABLE
 
-sales = read_csv('~/Documents/R_/Git/Shiny-App-Club/Datasets/sales_data_sample.csv', 
-                 col_types = list(), na="")
 
-sales %>% 
-  select(TERRITORY, CUSTOMERNAME, ORDERNUMBER, everything()) %>% 
-  arrange( ORDERNUMBER)
-
-
-# hierarchy in data
-#   territory (customers)
-#     customer  (orders)
-#       order (rows)
-# UI :
-# select territory  see customer
-# select customer   see orders
-# select order      see rows
+make_ui <- function(x, var) {
+  if (is.numeric(x)) {
+    rng <- range(x, na.rm = TRUE)
+    sliderInput(var, var, min = rng[1], max = rng[2], value = rng)
+  } else if (is.factor(x)) {
+    levs <- levels(x)
+    selectInput(var, var, choices = levs, selected = levs, multiple = TRUE)
+  } else {
+    # Not supported
+    NULL
+  }
+}
 
 
-
+filter_var <- function(x, val) {
+  if (is.numeric(x)) {
+    !is.na(x) & x >= val[1] & x <= val[2]
+  } else if (is.factor(x)) {
+    x %in% val
+  } else {
+    # No control, so don't filter
+    TRUE
+  }
+}
 
 
 
@@ -188,14 +194,17 @@ ui <- fluidPage(
   
 
   h1("Shiny App 10"),
-  titlePanel("chapter 10 - hierarchical select boxes"),
+  titlePanel("chapter 10 - filter UI"),
 
-  h3('sales data'),
-  selectInput("territory", "Territory", choices = unique(sales$TERRITORY)),
-  selectInput("customername", "Customer", choices = NULL),
-  selectInput("ordernumber", "Order number", choices = NULL),
-  tableOutput("data")
 
+  sidebarLayout(
+    sidebarPanel(
+      make_ui( iris$Sepal.Length, 'Sepal Length'),
+      make_ui( iris$Sepal.Width, 'Sepal Width'),
+      make_ui(iris$Species, "Species")
+    ),
+    mainPanel( tableOutput('data'))
+  )
 
 
   
@@ -210,34 +219,17 @@ ui <- fluidPage(
 # ===================================== SERVER
 server <- function(input, output, session) {
 
-
-  territory <- reactive({
-    filter(sales, TERRITORY == input$territory)
-  })
-  observeEvent(territory(), {
-    choices <- unique(territory()$CUSTOMERNAME)
-    updateSelectInput(inputId = "customername", choices = choices) 
+  
+  selected <- reactive({
+      filter_var(iris$Sepal.Length, input$Sepal.Length) &
+      filter_var(iris$Sepal.Width, input$Sepal.Width) &
+      filter_var(iris$Species, input$Species)
   })
   
-  customer <- reactive({
-    req(input$customername)
-    filter(territory(), CUSTOMERNAME == input$customername)
-  })
-  observeEvent(customer(), {
-    choices <- unique(customer()$ORDERNUMBER)
-    updateSelectInput(inputId = "ordernumber", choices = choices)
-  })
-  
-  output$data <- renderTable({
-    req(input$ordernumber)
-    customer() %>% 
-      filter(ORDERNUMBER == input$ordernumber) %>% 
-      select(QUANTITYORDERED, PRICEEACH, PRODUCTCODE)
-  })
-
+  output$data <- renderTable(head(iris[selected(), ], 12))
 
   
-  
+
   
 
 }

@@ -149,22 +149,6 @@ thematic::thematic_shiny(font="auto")
 
 # --- GLOBAL VARIABLE
 
-sales = read_csv('~/Documents/R_/Git/Shiny-App-Club/Datasets/sales_data_sample.csv', 
-                 col_types = list(), na="")
-
-sales %>% 
-  select(TERRITORY, CUSTOMERNAME, ORDERNUMBER, everything()) %>% 
-  arrange( ORDERNUMBER)
-
-
-# hierarchy in data
-#   territory (customers)
-#     customer  (orders)
-#       order (rows)
-# UI :
-# select territory  see customer
-# select customer   see orders
-# select order      see rows
 
 
 
@@ -188,14 +172,46 @@ ui <- fluidPage(
   
 
   h1("Shiny App 10"),
-  titlePanel("chapter 10 - hierarchical select boxes"),
+  titlePanel("chapter 10 - interrelated inputs"),
 
-  h3('sales data'),
-  selectInput("territory", "Territory", choices = unique(sales$TERRITORY)),
-  selectInput("customername", "Customer", choices = NULL),
-  selectInput("ordernumber", "Order number", choices = NULL),
-  tableOutput("data")
 
+  h3('temperature conversion'),
+  numericInput("temp_c", "Celsius", NA, step = 1),
+  numericInput("temp_f", "Fahrenheit", NA, step = 1),
+  
+  
+  h3('dynamic visbility'),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("controller", "Show", choices = paste0("panel", 1:3))
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = "switcher",
+        type = "hidden",
+        tabPanelBody("panel1", "Panel 1 content"),
+        tabPanelBody("panel2", "Panel 2 content"),
+        tabPanelBody("panel3", "Panel 3 content") )
+    )
+  ),
+  
+  
+  h3('wizard interface'),
+  tabsetPanel(
+    id= 'wizard',
+    type= 'hidden',
+    tabPanel('page_1', 'Welcome!', actionButton('page_12', 'next')),
+    tabPanel('page_2', 'page 2', actionButton('page_21', 'prev')),
+    tabPanel('page_3', 'end', actionButton('page_32', 'prev')),
+  ),
+  
+  
+  
+  h3('input controls'),
+  textInput("label", "label"),
+  selectInput("type", "type", c("slider", "numeric")),
+  uiOutput("numeric")
 
 
   
@@ -211,33 +227,43 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
 
-  territory <- reactive({
-    filter(sales, TERRITORY == input$territory)
-  })
-  observeEvent(territory(), {
-    choices <- unique(territory()$CUSTOMERNAME)
-    updateSelectInput(inputId = "customername", choices = choices) 
+  # -- temp conversion
+  observeEvent(input$temp_f, {
+    c <- round((input$temp_f - 32) * 5 / 9)
+    updateNumericInput(inputId = "temp_c", value = c)
   })
   
-  customer <- reactive({
-    req(input$customername)
-    filter(territory(), CUSTOMERNAME == input$customername)
-  })
-  observeEvent(customer(), {
-    choices <- unique(customer()$ORDERNUMBER)
-    updateSelectInput(inputId = "ordernumber", choices = choices)
+  observeEvent(input$temp_c, {
+    f <- round((input$temp_c * 9 / 5) + 32)
+    updateNumericInput(inputId = "temp_f", value = f)
   })
   
-  output$data <- renderTable({
-    req(input$ordernumber)
-    customer() %>% 
-      filter(ORDERNUMBER == input$ordernumber) %>% 
-      select(QUANTITYORDERED, PRICEEACH, PRODUCTCODE)
+  
+  # -- drop down tab selection
+  observeEvent(input$controller, {
+    updateTabsetPanel(inputId = "switcher", selected = input$controller)
   })
-
-
   
   
+  # -- wizard
+  switch_page <- function(i) {
+    updateTabsetPanel(inputId = "wizard", selected = paste0("page_", i))
+  }
+  
+  observeEvent(input$page_12, switch_page(2))
+  observeEvent(input$page_21, switch_page(1))
+  observeEvent(input$page_23, switch_page(3))
+  observeEvent(input$page_32, switch_page(2))
+  
+  
+  
+  output$numeric <- renderUI({
+    if (input$type == "slider") {
+      sliderInput("dynamic", input$label, value = 0, min = 0, max = 10)
+    } else {
+      numericInput("dynamic", input$label, value = 0, min = 0, max = 10) 
+    }
+  })
   
 
 }
