@@ -14,3 +14,16 @@ Goal of this is to share information on Shiny development in a positive way.
 
 ## what this bookclub is not:
 - a problem solving group, go to **r4ds Slack** for that.
+
+
+
+
+
+
+
+
+
+
+
+
+
