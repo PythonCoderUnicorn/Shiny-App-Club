@@ -22,7 +22,8 @@ Goal of this is to share information on Shiny development in a positive way.
 
 - [Joe Cheng | Shiny in Production (2019)](https://youtu.be/Wy3TY0gOmJw) 
 - [Best Practices for Developing Shiny Apps (2021)](https://youtu.be/iUVyDr-TWyU)
-
+- [Custom Theming Shiny :: bslib & thematic (2021)](https://youtu.be/zAqoLCQ83Ns)
+- [Shiny Apps with Sass & Bootstrap 4 (2020)](https://youtu.be/GHBwprI_Py4)
 
 
 
