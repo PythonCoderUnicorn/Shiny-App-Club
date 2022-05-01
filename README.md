@@ -18,7 +18,10 @@ Goal of this is to share information on Shiny development in a positive way.
 
 
 
+### Shiny YouTube videos
 
+- [Joe Cheng | Shiny in Production (2019)](https://youtu.be/Wy3TY0gOmJw) 
+- [Best Practices for Developing Shiny Apps (2021)](https://youtu.be/iUVyDr-TWyU)
 
 
 
